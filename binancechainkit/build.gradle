@@ -46,13 +46,13 @@ dependencies {
 
     //implementation 'com.github.horizontalsystems:hd-wallet-kit-android:a3666d8'
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.2'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
 
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.1'
     implementation 'com.google.code.gson:gson:2.8.5'
 
 
@@ -80,9 +80,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito-inline:2.19.1'
     androidTestImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
-
-    //Binance Java-SDK
-    //implementation 'com.binance.dex.api:binance-dex-api-client:1.0.0'
-    implementation 'com.github.binance-exchange:binance-java-api:e038355e51'
 
 }
