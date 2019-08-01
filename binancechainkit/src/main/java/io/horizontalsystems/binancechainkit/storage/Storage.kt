@@ -1,5 +1,6 @@
 package io.horizontalsystems.binancechainkit.storage
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import io.horizontalsystems.binancechainkit.core.IStorage
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
@@ -45,7 +46,22 @@ class Storage(private val database: KitDatabase) : IStorage {
     }
 
     override fun getTransactions(symbol: String, fromTransactionHash: String?, limit: Int?): List<Transaction> {
-        return database.transactions.getAll(symbol)
+        var sql = "SELECT * FROM `Transaction` WHERE symbol = '$symbol'"
+
+        fromTransactionHash?.let {
+            database.transactions.getById(it)?.let { transaction ->
+                sql += " AND blockTime <= ${transaction.blockTime.time}"
+                sql += " AND transactionId <> '${transaction.transactionId}'"
+            }
+        }
+
+        sql += " ORDER BY blockTime DESC"
+
+        limit?.let {
+            sql += " LIMIT $it"
+        }
+
+        return database.transactions.getSql(SimpleSQLiteQuery(sql))
     }
 
 }

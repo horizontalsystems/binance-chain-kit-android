@@ -1,9 +1,7 @@
 package io.horizontalsystems.binancechainkit.storage
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
+import androidx.sqlite.db.SupportSQLiteQuery
 import io.horizontalsystems.binancechainkit.models.Transaction
 
 @Dao
@@ -17,4 +15,10 @@ interface TransactionDao {
 
     @Query("DELETE FROM `Transaction`")
     fun deleteAll()
+
+    @Query("SELECT * FROM `Transaction` WHERE transactionId = :id LIMIT 1")
+    fun getById(id: String) : Transaction?
+
+    @RawQuery
+    fun getSql(query: SupportSQLiteQuery): List<Transaction>
 }
