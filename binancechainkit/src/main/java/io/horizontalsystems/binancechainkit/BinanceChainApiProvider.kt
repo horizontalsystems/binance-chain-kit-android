@@ -1,19 +1,24 @@
 package io.horizontalsystems.binancechainkit
 
+import com.binance.dex.api.client.Wallet
+import com.binance.dex.api.client.domain.TransactionMetadata
+import com.binance.dex.api.client.domain.broadcast.TransactionOption
+import com.binance.dex.api.client.domain.broadcast.Transfer
+import com.binance.dex.api.client.encoding.message.TransactionRequestAssembler
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
 import io.reactivex.Single
+import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
+import java.math.BigDecimal
 
-class BinanceChainApiProvider {
+class BinanceChainApiProvider(private val wallet: Wallet) {
 
     private var binanceChainApiService: BinanceChainApiService
 
@@ -40,7 +45,7 @@ class BinanceChainApiProvider {
 
     fun getLatestBlock(): Single<LatestBlock> {
         return binanceChainApiService.nodeInfo()
-            .map { LatestBlock(it.syncInfo.blockHeight, it.syncInfo.blockHash, it.syncInfo.blockTime) }
+            .map { LatestBlock(it.sync_info.blockHeight, it.sync_info.blockHash, it.sync_info.blockTime) }
     }
 
     fun getTransactions(account: String, startTime: Long): Single<List<Transaction>> {
@@ -48,29 +53,67 @@ class BinanceChainApiProvider {
             .map { it.tx }
     }
 
+    fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
+        return binanceChainApiService.nodeInfo()
+            .flatMap {
+                wallet.chainId = it.node_info.network
+
+                binanceChainApiService.account(wallet.address)
+            }
+            .flatMap { account ->
+                wallet.accountNumber = account.accountNumber
+                wallet.sequence = account.sequence
+                val sync = true
+
+                val transfer = Transfer()
+                transfer.coin = symbol
+                transfer.fromAddress = wallet.getAddress()
+                transfer.toAddress = to
+                transfer.amount = amount.toPlainString()
+
+                val options = TransactionOption(memo, 1, null)
+
+                val assembler = TransactionRequestAssembler(wallet, options)
+                val requestBody = assembler.buildTransfer(transfer)
+
+                binanceChainApiService.broadcast(sync, requestBody)
+            }
+            .map {
+                it.first().hash
+            }
+    }
+
 }
 
 interface BinanceChainApiService {
 
     @GET("/api/v1/account/{address}")
-    fun account(@Path("address") address: String): Single<BinanceApi.Account>
+    fun account(@Path("address") address: String): Single<BinanceResponse.Account>
 
     @GET("/api/v1/node-info")
-    fun nodeInfo(): Single<BinanceApi.NodeInfo>
+    fun nodeInfo(): Single<BinanceResponse.NodeInfoWrapper>
 
     @GET("/api/v1/transactions")
     fun transactions(
         @Query("address") address: String,
         @Query("startTime") startTime: Long,
         @Query("txType") txType: String = "TRANSFER"
-    ): Single<BinanceApi.Transactions>
+    ): Single<BinanceResponse.Transactions>
+
+    @POST("api/v1/broadcast")
+    fun broadcast(@Query("sync") sync: Boolean, @Body transaction: RequestBody): Single<List<TransactionMetadata>>
 }
 
-class BinanceApi {
+class BinanceResponse {
 
-    class Account(@SerializedName("account_number") var accountNumber: Int, var balances: List<Balance>)
+    class Account(
+        @SerializedName("account_number") var accountNumber: Int, var balances: List<Balance>,
+        val sequence: Long
+    )
 
-    class NodeInfo(@SerializedName("sync_info") val syncInfo: SyncInfo)
+    class NodeInfoWrapper(val node_info: NodeInfo, val sync_info: SyncInfo)
+
+    class NodeInfo(val network: String)
 
     class SyncInfo(
         @SerializedName("latest_block_hash")

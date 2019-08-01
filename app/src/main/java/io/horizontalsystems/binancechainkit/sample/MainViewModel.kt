@@ -41,7 +41,9 @@ class MainViewModel : ViewModel() {
     // Private
 
     private fun init() {
-        binanceChainKit = BinanceChainKit.instance(App.instance, "tbnb1sstqwv2lh26pe3xaw99mr2c4cyk2lrjx5ahkad", BinanceChainKit.NetworkType.TestNet)
+        val words = "error sound chuckle illness reveal echo close lock buddy large cook apple saddle rural trouble matter pluck inner window need sphere census smooth sun".split(" ")
+
+        binanceChainKit = BinanceChainKit.instance(App.instance, words, BinanceChainKit.NetworkType.TestNet)
         adapters.add(BinanceAdapter(binanceChainKit, "BNB"))
         adapters.add(BinanceAdapter(binanceChainKit, "ZCB-F00"))
 

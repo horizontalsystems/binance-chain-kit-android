@@ -81,4 +81,7 @@ dependencies {
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito-inline:2.19.1'
     androidTestImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
 
+    implementation 'com.github.binance-chain:java-sdk:ba021be'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
+
 }

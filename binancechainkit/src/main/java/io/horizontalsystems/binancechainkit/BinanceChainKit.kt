@@ -2,6 +2,8 @@ package io.horizontalsystems.binancechainkit
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import com.binance.dex.api.client.BinanceDexEnvironment
+import com.binance.dex.api.client.Wallet
 import io.horizontalsystems.binancechainkit.core.Asset
 import io.horizontalsystems.binancechainkit.managers.BalanceManager
 import io.horizontalsystems.binancechainkit.managers.TransactionManager
@@ -131,16 +133,18 @@ class BinanceChainKit(val account: String, private val balanceManager: BalanceMa
 
     companion object {
 
-        fun instance(context: Context, account: String, networkType: NetworkType = NetworkType.MainNet, walletId: String = "unique-id"): BinanceChainKit {
+        fun instance(context: Context, words: List<String>, networkType: NetworkType = NetworkType.MainNet, walletId: String = "unique-id"): BinanceChainKit {
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
-            val apiProvider = BinanceChainApiProvider()
+            val wallet = Wallet.createWalletFromMnemonicCode(words, BinanceDexEnvironment.TEST_NET)
+
+            val apiProvider = BinanceChainApiProvider(wallet)
 
             val balanceManager = BalanceManager(storage, apiProvider)
             val actionManager = TransactionManager(storage, apiProvider)
 
-            val kit = BinanceChainKit(account, balanceManager, actionManager)
+            val kit = BinanceChainKit(wallet.address, balanceManager, actionManager)
 
             balanceManager.listener = kit
             actionManager.listener = kit

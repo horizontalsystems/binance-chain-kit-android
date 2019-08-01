@@ -12,7 +12,7 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(transactions: List<Transaction>)
 
-    @Query("SELECT * FROM `Transaction` WHERE symbol = :symbol")
+    @Query("SELECT * FROM `Transaction` WHERE symbol = :symbol ORDER BY blockTime DESC")
     fun getAll(symbol: String): List<Transaction>
 
     @Query("DELETE FROM `Transaction`")

@@ -69,7 +69,7 @@ class TransactionManager(private val storage: IStorage, private val apiProvider:
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
-        TODO()
+        return apiProvider.send(symbol, to, amount, memo)
     }
 
 }
