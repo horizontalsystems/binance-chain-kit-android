@@ -1,6 +1,6 @@
 package io.horizontalsystems.binancechainkit.managers
 
-import io.horizontalsystems.binancechainkit.BinanceChainApiProvider
+import io.horizontalsystems.binancechainkit.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.IStorage
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
@@ -9,7 +9,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 
-class BalanceManager(private val storage: IStorage, private val apiProvider: BinanceChainApiProvider) {
+class BalanceManager(private val storage: IStorage, private val binanceApi: BinanceChainApi) {
 
     interface Listener {
         fun onSyncBalances(balances: List<Balance>, latestBlock: LatestBlock)
@@ -48,8 +48,8 @@ class BalanceManager(private val storage: IStorage, private val apiProvider: Bin
     }
 
     private fun getBalances(account: String): Single<Pair<List<Balance>, LatestBlock>> {
-        val latestBlock = apiProvider.getLatestBlock()
-        val balances = apiProvider.getBalances(account)
+        val latestBlock = binanceApi.getLatestBlock()
+        val balances = binanceApi.getBalances(account)
         return balances.zipWith(latestBlock, BiFunction<List<Balance>, LatestBlock, Pair<List<Balance>, LatestBlock>> { t1, t2 ->
             Pair(t1, t2)
         })

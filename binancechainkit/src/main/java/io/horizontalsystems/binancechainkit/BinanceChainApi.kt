@@ -1,5 +1,6 @@
 package io.horizontalsystems.binancechainkit
 
+import com.binance.dex.api.client.BinanceDexEnvironment
 import com.binance.dex.api.client.Wallet
 import com.binance.dex.api.client.domain.TransactionMetadata
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
@@ -18,19 +19,28 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.math.BigDecimal
 
-class BinanceChainApiProvider(private val wallet: Wallet) {
+class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkType) {
 
+    val address: String
+
+    private val wallet: Wallet
     private var binanceChainApiService: BinanceChainApiService
 
     init {
-        val baseUrl = "https://testnet-dex.binance.org"
+        val binanceEnv = when (networkType) {
+            BinanceChainKit.NetworkType.MainNet -> BinanceDexEnvironment.PROD
+            BinanceChainKit.NetworkType.TestNet -> BinanceDexEnvironment.TEST_NET
+        }
+
+        wallet = Wallet.createWalletFromMnemonicCode(words, binanceEnv)
+        address = wallet.address
 
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
             .create()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(binanceEnv.baseUrl)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()

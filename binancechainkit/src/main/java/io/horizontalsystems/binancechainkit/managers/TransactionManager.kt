@@ -1,6 +1,6 @@
 package io.horizontalsystems.binancechainkit.managers
 
-import io.horizontalsystems.binancechainkit.BinanceChainApiProvider
+import io.horizontalsystems.binancechainkit.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.IStorage
 import io.horizontalsystems.binancechainkit.models.SyncState
 import io.horizontalsystems.binancechainkit.models.Transaction
@@ -10,7 +10,7 @@ import io.reactivex.schedulers.Schedulers
 import java.math.BigDecimal
 import java.util.*
 
-class TransactionManager(private val storage: IStorage, private val apiProvider: BinanceChainApiProvider) {
+class TransactionManager(private val storage: IStorage, private val binanceApi: BinanceChainApi) {
 
     interface Listener {
         fun onSyncTransactions(transactions: List<Transaction>)
@@ -44,7 +44,7 @@ class TransactionManager(private val storage: IStorage, private val apiProvider:
         // that is why here we left one minute time window
         val currentTime = Date().time - 60_000
 
-        return apiProvider.getTransactions(account, startTime)
+        return binanceApi.getTransactions(account, startTime)
             .flatMap {
                 val syncedUntil = when {
                     it.size == 1000 -> it.last().blockTime.time
@@ -69,7 +69,7 @@ class TransactionManager(private val storage: IStorage, private val apiProvider:
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
-        return apiProvider.send(symbol, to, amount, memo)
+        return binanceApi.send(symbol, to, amount, memo)
     }
 
 }
