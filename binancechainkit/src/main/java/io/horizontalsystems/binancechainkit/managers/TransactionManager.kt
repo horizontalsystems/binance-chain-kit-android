@@ -40,10 +40,12 @@ class TransactionManager(private val storage: IStorage, private val apiProvider:
     }
 
     private fun syncTransactionsPartially(account: String, startTime: Long): Single<Unit> {
+        // there is a time delay (usually few seconds) for the new transactions to be included in the response
+        // that is why here we left one minute time window
+        val currentTime = Date().time - 60_000
+
         return apiProvider.getTransactions(account, startTime)
             .flatMap {
-                val currentTime = Date().time
-
                 val syncedUntil = when {
                     it.size == 1000 -> it.last().blockTime.time
                     else -> Math.min(startTime + windowTime, currentTime)
