@@ -37,7 +37,7 @@ class BalanceFragment : Fragment() {
             })
 
             viewModel.latestBlock.observe(this, Observer { block ->
-                tokensAdapter.irreversibleBlockHeight = block.height
+                tokensAdapter.latestBlockHeight = block.height
                 tokensAdapter.notifyDataSetChanged()
             })
         }
@@ -63,7 +63,7 @@ class BalanceFragment : Fragment() {
 
 class TokensAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var items = listOf<BinanceAdapter>()
-    var irreversibleBlockHeight: Int = 0
+    var latestBlockHeight: Int = 0
 
     override fun getItemCount() = items.size
 
@@ -73,7 +73,7 @@ class TokensAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is ViewHolderToken -> holder.bind(items[position], irreversibleBlockHeight)
+            is ViewHolderToken -> holder.bind(items[position], latestBlockHeight)
         }
     }
 }
@@ -83,7 +83,7 @@ class ViewHolderToken(containerView: View) : RecyclerView.ViewHolder(containerVi
     private val summaryTitle = containerView.findViewById<TextView>(R.id.summaryTitle)
     private val summaryValue = containerView.findViewById<TextView>(R.id.summaryValue)
 
-    fun bind(adapter: BinanceAdapter, irreversibleBlockHeight: Int) {
+    fun bind(adapter: BinanceAdapter, latestBlockHeight: Int) {
         val syncState = when (adapter.syncState) {
             BinanceChainKit.SyncState.Synced -> "Synced"
             BinanceChainKit.SyncState.Syncing -> "Syncing"
@@ -95,13 +95,13 @@ class ViewHolderToken(containerView: View) : RecyclerView.ViewHolder(containerVi
 
         summaryTitle.text = """
             SyncState:
-            Irreversible Block Height:
+            Block Height:
             Balance:
         """.trimIndent()
 
         summaryValue.text = """
             $syncState
-            $irreversibleBlockHeight
+            $latestBlockHeight
             ${adapter.balance} ${adapter.name}
         """.trimIndent()
     }

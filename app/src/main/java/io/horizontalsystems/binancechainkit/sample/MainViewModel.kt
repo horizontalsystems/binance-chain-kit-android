@@ -64,7 +64,7 @@ class MainViewModel : ViewModel() {
                 updateTransactions(adapter)
             }
 
-            adapter.irreversibleBlockFlowable.subscribe {
+            adapter.latestBlockFlowable.subscribe {
                 latestBlock.postValue(binanceChainKit.latestBlock)
             }
         }

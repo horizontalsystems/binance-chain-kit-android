@@ -28,7 +28,7 @@ class BinanceAdapter(private val binanceChainKit: BinanceChainKit, tokenSymbol: 
     val transactionsFlowable: Flowable<Unit>
         get() = asset.transactionsFlowable.map { Unit }
 
-    val irreversibleBlockFlowable: Flowable<Unit>
+    val latestBlockFlowable: Flowable<Unit>
         get() = binanceChainKit.latestBlockFlowable.map { Unit }
 
     fun send(to: String, amount: BigDecimal, memo: String): Single<String> {
