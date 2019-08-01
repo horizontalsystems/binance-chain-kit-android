@@ -61,20 +61,18 @@ class BalanceFragment : Fragment() {
     }
 }
 
-class TokensAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TokensAdapter : RecyclerView.Adapter<ViewHolderToken>() {
     var items = listOf<BinanceAdapter>()
     var latestBlockHeight: Int = 0
 
     override fun getItemCount() = items.size
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderToken {
         return ViewHolderToken(LayoutInflater.from(parent.context).inflate(R.layout.view_holder_token, parent, false))
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (holder) {
-            is ViewHolderToken -> holder.bind(items[position], latestBlockHeight)
-        }
+    override fun onBindViewHolder(holder: ViewHolderToken, position: Int) {
+        holder.bind(items[position], latestBlockHeight)
     }
 }
 
