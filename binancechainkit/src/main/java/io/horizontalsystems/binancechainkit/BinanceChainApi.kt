@@ -107,7 +107,8 @@ interface BinanceChainApiService {
     fun transactions(
         @Query("address") address: String,
         @Query("startTime") startTime: Long,
-        @Query("txType") txType: String = "TRANSFER"
+        @Query("txType") txType: String = "TRANSFER",
+        @Query("limit") limit: Int = 1000
     ): Single<BinanceResponse.Transactions>
 
     @POST("api/v1/broadcast")
