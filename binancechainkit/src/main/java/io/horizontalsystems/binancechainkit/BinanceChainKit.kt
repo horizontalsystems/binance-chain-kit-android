@@ -75,7 +75,7 @@ class BinanceChainKit(private val account: String, private val balanceManager: B
         return transactionManager
             .send(symbol, to, amount, memo)
             .doOnSuccess {
-                Observable.timer(2, TimeUnit.SECONDS).subscribe {
+                Observable.timer(5, TimeUnit.SECONDS).subscribe {
                     refresh()
                 }
             }
