@@ -135,7 +135,7 @@ class BinanceChainKit(private val account: String, private val balanceManager: B
 
     companion object {
 
-        fun instance(context: Context, words: List<String>, networkType: NetworkType = NetworkType.MainNet, walletId: String = "unique-id"): BinanceChainKit {
+        fun instance(context: Context, words: List<String>, walletId: String, networkType: NetworkType = NetworkType.MainNet): BinanceChainKit {
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
