@@ -19,7 +19,7 @@ import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class BinanceChainKit(val account: String, private val balanceManager: BalanceManager, private val transactionManager: TransactionManager) : BalanceManager.Listener, TransactionManager.Listener {
+class BinanceChainKit(private val account: String, private val balanceManager: BalanceManager, private val transactionManager: TransactionManager) : BalanceManager.Listener, TransactionManager.Listener {
 
     var latestBlock: LatestBlock? = balanceManager.latestBlock
     val latestBlockFlowable: Flowable<LatestBlock>
@@ -65,6 +65,10 @@ class BinanceChainKit(val account: String, private val balanceManager: BalanceMa
     fun stop() {
         balanceManager.stop()
         transactionManager.stop()
+    }
+
+    fun receiveAddress(): String {
+        return account
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
