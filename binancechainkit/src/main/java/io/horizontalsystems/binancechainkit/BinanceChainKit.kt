@@ -19,12 +19,13 @@ import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class BinanceChainKit(private val account: String, private val balanceManager: BalanceManager, private val transactionManager: TransactionManager) : BalanceManager.Listener, TransactionManager.Listener {
+class BinanceChainKit(private val binanceChainApi: BinanceChainApi, private val balanceManager: BalanceManager, private val transactionManager: TransactionManager) : BalanceManager.Listener, TransactionManager.Listener {
 
     var latestBlock: LatestBlock? = balanceManager.latestBlock
     val latestBlockFlowable: Flowable<LatestBlock>
         get() = latestBlockSubject.toFlowable(BackpressureStrategy.BUFFER)
 
+    private val account: String = binanceChainApi.address
     private val assets = mutableListOf<Asset>()
     private val latestBlockSubject = PublishSubject.create<LatestBlock>()
 
@@ -69,6 +70,11 @@ class BinanceChainKit(private val account: String, private val balanceManager: B
 
     fun receiveAddress(): String {
         return account
+    }
+
+    @Throws
+    fun validateAddress(address: String) {
+        binanceChainApi.validateAddress(address)
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
@@ -144,7 +150,7 @@ class BinanceChainKit(private val account: String, private val balanceManager: B
             val balanceManager = BalanceManager(storage, binanceApi)
             val actionManager = TransactionManager(storage, binanceApi)
 
-            val kit = BinanceChainKit(binanceApi.address, balanceManager, actionManager)
+            val kit = BinanceChainKit(binanceApi, balanceManager, actionManager)
 
             balanceManager.listener = kit
             actionManager.listener = kit

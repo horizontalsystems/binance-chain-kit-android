@@ -5,6 +5,7 @@ import com.binance.dex.api.client.Wallet
 import com.binance.dex.api.client.domain.TransactionMetadata
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
 import com.binance.dex.api.client.domain.broadcast.Transfer
+import com.binance.dex.api.client.encoding.Crypto
 import com.binance.dex.api.client.encoding.message.TransactionRequestAssembler
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
@@ -47,6 +48,11 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
             .build()
 
         binanceChainApiService = retrofit.create(BinanceChainApiService::class.java)
+    }
+
+    @Throws
+    fun validateAddress(address: String) {
+        Crypto.decodeAddress(address)
     }
 
     fun getBalances(account: String): Single<List<Balance>> {
