@@ -13,6 +13,7 @@ import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
 import io.reactivex.Single
 import okhttp3.RequestBody
+import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -51,6 +52,13 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
     fun getBalances(account: String): Single<List<Balance>> {
         return binanceChainApiService.account(account)
             .map { it.balances }
+            .onErrorResumeNext {
+                if (it is HttpException && it.code() == 404) {
+                    Single.just(listOf())
+                } else {
+                    Single.error(it)
+                }
+            }
     }
 
     fun getLatestBlock(): Single<LatestBlock> {
