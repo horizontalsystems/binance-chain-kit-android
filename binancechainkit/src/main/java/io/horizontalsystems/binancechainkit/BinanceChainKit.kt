@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit
 
 class BinanceChainKit(private val binanceChainApi: BinanceChainApi, private val balanceManager: BalanceManager, private val transactionManager: TransactionManager) : BalanceManager.Listener, TransactionManager.Listener {
 
+    var binanceBalance: BigDecimal = balanceManager.getBalance("BNB")?.amount ?: BigDecimal.ZERO
     var latestBlock: LatestBlock? = balanceManager.latestBlock
     val latestBlockFlowable: Flowable<LatestBlock>
         get() = latestBlockSubject.toFlowable(BackpressureStrategy.BUFFER)
