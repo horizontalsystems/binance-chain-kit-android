@@ -9,6 +9,7 @@ import com.binance.dex.api.client.encoding.Crypto
 import com.binance.dex.api.client.encoding.message.TransactionRequestAssembler
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
+import io.horizontalsystems.binancechainkit.core.GsonUTCDateAdapter
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
@@ -20,6 +21,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.math.BigDecimal
+import java.util.*
 
 class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkType) {
 
@@ -38,7 +40,7 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
         address = wallet.address
 
         val gson = GsonBuilder()
-            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+            .registerTypeAdapter(Date::class.java, GsonUTCDateAdapter())
             .create()
 
         val retrofit = Retrofit.Builder()
