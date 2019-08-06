@@ -9,6 +9,16 @@ import io.horizontalsystems.binancechainkit.models.Transaction
 
 class Storage(private val database: KitDatabase) : IStorage {
 
+    override fun getAllBalances(): List<Balance>?
+    {
+        return database.balance.getAll()
+    }
+
+    override fun removeBalances(balances: List<Balance>)
+    {
+        database.balance.delete(balances.map { it.symbol })
+    }
+
     // LatestBlock
 
     override var latestBlock: LatestBlock?
