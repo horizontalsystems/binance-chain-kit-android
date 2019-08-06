@@ -8,6 +8,7 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import java.math.BigDecimal
 
 class BalanceManager(private val storage: IStorage, private val binanceApi: BinanceChainApi) {
 
@@ -32,10 +33,10 @@ class BalanceManager(private val storage: IStorage, private val binanceApi: Bina
                 val balances = it.first
                 val latestBlock = it.second
 
-                storage.setBalances(balances)
-                storage.latestBlock = latestBlock
+                // Sync storage info
+                val balancesToSync = syncStorage( balances,latestBlock )
 
-                listener?.onSyncBalances(balances, latestBlock)
+                listener?.onSyncBalances(balancesToSync, latestBlock)
             }, {
                 it?.printStackTrace()
                 listener?.onSyncBalanceFail()
@@ -47,9 +48,32 @@ class BalanceManager(private val storage: IStorage, private val binanceApi: Bina
         disposables.dispose()
     }
 
+    private fun syncStorage(balances: List<Balance>, latestBlock: LatestBlock ) :List<Balance>
+    {
+        storage.latestBlock = latestBlock
+
+        var allStoredBalances = storage.getAllBalances()
+        var balancesToRemove = arrayListOf<Balance>()
+
+        for (balance in allStoredBalances.orEmpty())
+        {
+            if( !balances.any{ it.symbol == balance.symbol} )
+            {
+                balance.amount = BigDecimal.ZERO
+                balancesToRemove.add(balance)
+            }
+        }
+
+        storage.setBalances(balances)
+        storage.removeBalances(balancesToRemove)
+
+        return balances + balancesToRemove
+    }
+
     private fun getBalances(account: String): Single<Pair<List<Balance>, LatestBlock>> {
         val latestBlock = binanceApi.getLatestBlock()
         val balances = binanceApi.getBalances(account)
+
         return balances.zipWith(latestBlock, BiFunction<List<Balance>, LatestBlock, Pair<List<Balance>, LatestBlock>> { t1, t2 ->
             Pair(t1, t2)
         })

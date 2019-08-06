@@ -11,6 +11,8 @@ interface IStorage {
 
     fun setBalances(balances: List<Balance>)
     fun getBalance(symbol: String): Balance?
+    fun getAllBalances(): List<Balance>?
+    fun removeBalances(balances: List<Balance>)
 
     fun addTransactions(transactions: List<Transaction>)
     fun getTransactions(symbol: String, fromTransactionHash: String?, limit: Int?): List<Transaction>

@@ -6,4 +6,4 @@ import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 
 @Entity
-class Balance(@PrimaryKey val symbol: String, @SerializedName("free") val amount: BigDecimal)
+class Balance(@PrimaryKey val symbol: String, @SerializedName("free") var amount: BigDecimal)

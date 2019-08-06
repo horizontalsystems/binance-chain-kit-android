@@ -19,7 +19,12 @@ import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class BinanceChainKit(private val binanceChainApi: BinanceChainApi, private val balanceManager: BalanceManager, private val transactionManager: TransactionManager) : BalanceManager.Listener, TransactionManager.Listener {
+class BinanceChainKit(private val binanceChainApi: BinanceChainApi,
+                      private val balanceManager: BalanceManager,
+                      private val transactionManager: TransactionManager)
+
+    : BalanceManager.Listener, TransactionManager.Listener
+{
 
     val binanceBalance: BigDecimal
         get() = balanceManager.getBalance("BNB")?.amount ?: BigDecimal.ZERO
@@ -89,7 +94,9 @@ class BinanceChainKit(private val binanceChainApi: BinanceChainApi, private val 
             }
     }
 
-    fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null): Single<List<TransactionInfo>> {
+    fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null)
+            : Single<List<TransactionInfo>>
+    {
         return transactionManager
             .getTransactions(asset.symbol, fromTransactionHash, limit)
             .map { list -> list.map { TransactionInfo(it) } }
@@ -143,7 +150,9 @@ class BinanceChainKit(private val binanceChainApi: BinanceChainApi, private val 
 
     companion object {
 
-        fun instance(context: Context, words: List<String>, walletId: String, networkType: NetworkType = NetworkType.MainNet): BinanceChainKit {
+        fun instance(context: Context, words: List<String>, walletId: String,
+                     networkType: NetworkType = NetworkType.MainNet) : BinanceChainKit
+        {
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
