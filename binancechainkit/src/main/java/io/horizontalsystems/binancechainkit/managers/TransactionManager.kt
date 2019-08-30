@@ -1,7 +1,8 @@
 package io.horizontalsystems.binancechainkit.managers
 
-import io.horizontalsystems.binancechainkit.BinanceChainApi
+import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.IStorage
+import io.horizontalsystems.binancechainkit.core.Wallet
 import io.horizontalsystems.binancechainkit.models.SyncState
 import io.horizontalsystems.binancechainkit.models.Transaction
 import io.reactivex.Single
@@ -10,7 +11,10 @@ import io.reactivex.schedulers.Schedulers
 import java.math.BigDecimal
 import java.util.*
 
-class TransactionManager(private val storage: IStorage, private val binanceApi: BinanceChainApi) {
+
+class TransactionManager( private val wallet: Wallet,
+                          private val storage: IStorage,
+                          private val binanceApi: BinanceChainApi) {
 
     interface Listener {
         fun onSyncTransactions(transactions: List<Transaction>)
@@ -22,9 +26,14 @@ class TransactionManager(private val storage: IStorage, private val binanceApi: 
 
     // 3 months duration
     private val windowTime: Long = 88 * 24 * 3600 * 1000L
-    private val binanceLaunchTime: Long = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { set(2019, 0, 1, 0, 0, 0) }.time.time
+    private val binanceLaunchTime: Long =
+        Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { set(2019, 0, 1, 0, 0, 0) }.time.time
 
-    fun getTransactions(symbol: String, fromTransactionHash: String? = null, limit: Int? = null): Single<List<Transaction>> {
+    fun getTransactions(
+        symbol: String,
+        fromTransactionHash: String? = null,
+        limit: Int? = null
+    ): Single<List<Transaction>> {
         return Single.just(storage.getTransactions(symbol, fromTransactionHash, limit))
     }
 
@@ -69,7 +78,7 @@ class TransactionManager(private val storage: IStorage, private val binanceApi: 
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
-        return binanceApi.send(symbol, to, amount, memo)
+        return binanceApi.send(symbol, to, amount, memo, wallet )
     }
 
 }

@@ -1,15 +1,10 @@
-package io.horizontalsystems.binancechainkit
+package io.horizontalsystems.binancechainkit.core.api
 
-import com.binance.dex.api.client.BinanceDexEnvironment
-import com.binance.dex.api.client.Wallet
-import com.binance.dex.api.client.domain.TransactionMetadata
-import com.binance.dex.api.client.domain.broadcast.TransactionOption
-import com.binance.dex.api.client.domain.broadcast.Transfer
-import com.binance.dex.api.client.encoding.Crypto
-import com.binance.dex.api.client.encoding.message.TransactionRequestAssembler
+
 import com.google.gson.GsonBuilder
-import com.google.gson.annotations.SerializedName
+import io.horizontalsystems.binancechainkit.BinanceChainKit
 import io.horizontalsystems.binancechainkit.core.GsonUTCDateAdapter
+import io.horizontalsystems.binancechainkit.core.Wallet
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
@@ -20,41 +15,30 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.lang.Exception
 import java.math.BigDecimal
 import java.util.*
+import java.util.logging.Logger
 
-class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkType) {
+class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
-    val address: String
+    //val address: String
 
-    private val wallet: Wallet
+    private val logger = Logger.getLogger("BinanceChainApi")
     private var binanceChainApiService: BinanceChainApiService
 
     init {
-        val binanceEnv = when (networkType) {
-            BinanceChainKit.NetworkType.MainNet -> BinanceDexEnvironment.PROD
-            BinanceChainKit.NetworkType.TestNet -> BinanceDexEnvironment.TEST_NET
-        }
-
-        wallet = Wallet.createWalletFromMnemonicCode(words, binanceEnv)
-        address = wallet.address
-
         val gson = GsonBuilder()
             .registerTypeAdapter(Date::class.java, GsonUTCDateAdapter())
             .create()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(binanceEnv.baseUrl)
+            .baseUrl(networkType.endpoint())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()
 
         binanceChainApiService = retrofit.create(BinanceChainApiService::class.java)
-    }
-
-    @Throws
-    fun validateAddress(address: String) {
-        Crypto.decodeAddress(address)
     }
 
     fun getBalances(account: String): Single<List<Balance>> {
@@ -63,8 +47,9 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
             .onErrorResumeNext {
                 if (it is HttpException && it.code() == 404) {
                     Single.just(listOf())
-                } else {
-                    Single.error(it)
+                }
+                else {
+                    Single.error(it.fillInStackTrace())
                 }
             }
     }
@@ -79,7 +64,8 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
             .map { it.tx }
     }
 
-    fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
+    fun send(symbol: String, to: String, amount: BigDecimal, memo: String, wallet: Wallet): Single<String> {
+
         return binanceChainApiService.nodeInfo()
             .flatMap {
                 wallet.chainId = it.node_info.network
@@ -91,20 +77,12 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
                 wallet.sequence = account.sequence
                 val sync = true
 
-                val transfer = Transfer()
-                transfer.coin = symbol
-                transfer.fromAddress = wallet.getAddress()
-                transfer.toAddress = to
-                transfer.amount = amount.toPlainString()
+                val message = Message.transfer(symbol, amount, to, memo, wallet)
 
-                val options = TransactionOption(memo, 1, null)
+                logger.info(message.buildTransferPayload())
+                binanceChainApiService.broadcast(sync, message.buildTransfer())
 
-                val assembler = TransactionRequestAssembler(wallet, options)
-                val requestBody = assembler.buildTransfer(transfer)
-
-                binanceChainApiService.broadcast(sync, requestBody)
-            }
-            .map {
+            }.map {
                 it.first().hash
             }
     }
@@ -114,10 +92,10 @@ class BinanceChainApi(words: List<String>, networkType: BinanceChainKit.NetworkT
 interface BinanceChainApiService {
 
     @GET("/api/v1/account/{address}")
-    fun account(@Path("address") address: String): Single<BinanceResponse.Account>
+    fun account(@Path("address") address: String): Single<Response.Account>
 
     @GET("/api/v1/node-info")
-    fun nodeInfo(): Single<BinanceResponse.NodeInfoWrapper>
+    fun nodeInfo(): Single<Response.NodeInfoWrapper>
 
     @GET("/api/v1/transactions")
     fun transactions(
@@ -125,33 +103,8 @@ interface BinanceChainApiService {
         @Query("startTime") startTime: Long,
         @Query("txType") txType: String = "TRANSFER",
         @Query("limit") limit: Int = 1000
-    ): Single<BinanceResponse.Transactions>
+    ): Single<Response.Transactions>
 
     @POST("api/v1/broadcast")
     fun broadcast(@Query("sync") sync: Boolean, @Body transaction: RequestBody): Single<List<TransactionMetadata>>
-}
-
-class BinanceResponse {
-
-    class Account(
-        @SerializedName("account_number") var accountNumber: Int, var balances: List<Balance>,
-        val sequence: Long
-    )
-
-    class NodeInfoWrapper(val node_info: NodeInfo, val sync_info: SyncInfo)
-
-    class NodeInfo(val network: String)
-
-    class SyncInfo(
-        @SerializedName("latest_block_hash")
-        val blockHash: String,
-
-        @SerializedName("latest_block_height")
-        val blockHeight: Int,
-
-        @SerializedName("latest_block_time")
-        val blockTime: String
-    )
-
-    class Transactions(var tx: List<Transaction>)
 }
