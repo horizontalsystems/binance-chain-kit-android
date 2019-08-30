@@ -1,6 +1,6 @@
 package io.horizontalsystems.binancechainkit.managers
 
-import io.horizontalsystems.binancechainkit.BinanceChainApi
+import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.IStorage
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock

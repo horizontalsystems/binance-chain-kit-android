@@ -3,6 +3,9 @@ package io.horizontalsystems.binancechainkit
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import io.horizontalsystems.binancechainkit.core.Asset
+import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
+import io.horizontalsystems.binancechainkit.core.Wallet
+import io.horizontalsystems.binancechainkit.helpers.Crypto
 import io.horizontalsystems.binancechainkit.managers.BalanceManager
 import io.horizontalsystems.binancechainkit.managers.TransactionManager
 import io.horizontalsystems.binancechainkit.models.Balance
@@ -11,6 +14,8 @@ import io.horizontalsystems.binancechainkit.models.Transaction
 import io.horizontalsystems.binancechainkit.models.TransactionInfo
 import io.horizontalsystems.binancechainkit.storage.KitDatabase
 import io.horizontalsystems.binancechainkit.storage.Storage
+import io.horizontalsystems.hdwalletkit.HDWallet
+import io.horizontalsystems.hdwalletkit.Mnemonic
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Observable
@@ -19,20 +24,20 @@ import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class BinanceChainKit(private val binanceChainApi: BinanceChainApi,
+class BinanceChainKit(private val account: String,
                       private val balanceManager: BalanceManager,
                       private val transactionManager: TransactionManager)
 
-    : BalanceManager.Listener, TransactionManager.Listener
-{
+    : BalanceManager.Listener, TransactionManager.Listener {
 
     val binanceBalance: BigDecimal
         get() = balanceManager.getBalance("BNB")?.amount ?: BigDecimal.ZERO
+
     var latestBlock: LatestBlock? = balanceManager.latestBlock
+
     val latestBlockFlowable: Flowable<LatestBlock>
         get() = latestBlockSubject.toFlowable(BackpressureStrategy.BUFFER)
 
-    private val account: String = binanceChainApi.address
     private val assets = mutableListOf<Asset>()
     private val latestBlockSubject = PublishSubject.create<LatestBlock>()
 
@@ -81,7 +86,7 @@ class BinanceChainKit(private val binanceChainApi: BinanceChainApi,
 
     @Throws
     fun validateAddress(address: String) {
-        binanceChainApi.validateAddress(address)
+        Crypto.decodeAddress( address )
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
@@ -95,6 +100,7 @@ class BinanceChainKit(private val binanceChainApi: BinanceChainApi,
     }
 
     fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null)
+
             : Single<List<TransactionInfo>>
     {
         return transactionManager
@@ -143,12 +149,27 @@ class BinanceChainKit(private val binanceChainApi: BinanceChainApi,
         Syncing
     }
 
-    enum class NetworkType {
+    enum class NetworkType{
         MainNet,
-        TestNet
+        TestNet;
+
+        fun addressPrefix(): String {
+            return when(this){
+                MainNet -> "bnb"
+                TestNet -> "tbnb"
+            }
+        }
+
+        fun endpoint(): String{
+            return when(this){
+                MainNet -> "https://dex.binance.org"
+                TestNet -> "https://testnet-dex.binance.org"
+            }
+        }
+
     }
 
-    companion object {
+    companion object{
 
         fun instance(context: Context, words: List<String>, walletId: String,
                      networkType: NetworkType = NetworkType.MainNet) : BinanceChainKit
@@ -156,24 +177,32 @@ class BinanceChainKit(private val binanceChainApi: BinanceChainApi,
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
-            val binanceApi = BinanceChainApi(words, networkType)
+            val hdWallet = HDWallet( Mnemonic().toSeed( words), coinType = 714  )
 
+            val wallet = Wallet( hdWallet, networkType)
+
+            val binanceApi = BinanceChainApi(networkType)
             val balanceManager = BalanceManager(storage, binanceApi)
-            val actionManager = TransactionManager(storage, binanceApi)
+            val actionManager = TransactionManager( wallet, storage, binanceApi )
 
-            val kit = BinanceChainKit(binanceApi, balanceManager, actionManager)
+            val kit = BinanceChainKit( wallet.address, balanceManager, actionManager )
 
             balanceManager.listener = kit
             actionManager.listener = kit
 
+
+            kit.validateAddress(wallet.address)
+
             return kit
         }
 
-        fun clear(context: Context, networkType: NetworkType, walletId: String) {
+        fun clear(context: Context, networkType: NetworkType, walletId: String)
+        {
             SQLiteDatabase.deleteDatabase(context.getDatabasePath(getDatabaseName(networkType, walletId)))
         }
 
-        private fun getDatabaseName(networkType: NetworkType, walletId: String): String {
+        private fun getDatabaseName(networkType: NetworkType, walletId: String): String
+        {
             return "Binance-$networkType-$walletId"
         }
     }
