@@ -12,9 +12,7 @@ import android.R.string.ok
 import io.horizontalsystems.binancechainkit.proto.Send
 
 
-
 typealias ProtoToken = io.horizontalsystems.binancechainkit.proto.Token
-
 
 
 class Response {
@@ -44,14 +42,12 @@ class Response {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class TransactionMetadata {
-
-    var code: Int = 0
-    var data: String? = null
-    var hash: String? = null
-    var log: String? = null
-    var height: Long? = null
-    var isOk: Boolean = false
+class TransactionMetadata(var code: Int = 0,
+                          var data: String = "",
+                          var hash: String = "",
+                          var log: String? = "",
+                          var height: Long = 0,
+                          var isOk: Boolean = false) {
 
     override fun toString(): String {
         return ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
@@ -67,12 +63,10 @@ class TransactionMetadata {
 
 interface BinanceDexTransactionMessage
 
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder(alphabetic = true)
-class Token {
-    var denom: String = ""
-    var amount: Long = 0
+class Token(val denom: String,
+            val amount: Long = 0) {
 
     override fun toString(): String {
         return ToStringBuilder(this, BinanceDexConstants.BINANCE_DEX_TO_STRING_STYLE)
@@ -83,26 +77,20 @@ class Token {
 
     companion object {
 
-        fun of(source: ProtoToken) : Token {
-            val token = Token()
-            token.denom = source.getDenom()
-            token.amount = source.getAmount()
-            return token
+        fun of(source: ProtoToken): Token {
+            return Token(source.denom, source.amount)
         }
 
         fun of(sendToken: Send.Token): Token {
-            val token = Token()
-            token.denom = sendToken.denom
-            token.amount = sendToken.amount
-            return token
+            return Token(sendToken.denom, sendToken.amount)
         }
     }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder(alphabetic = true)
-class InputOutput(  var address: String,
-                    var coins: List<Token>){
+class InputOutput(var address: String,
+                  var coins: List<Token>) {
 
     override fun toString(): String {
         return ToStringBuilder(this, BinanceDexConstants.BINANCE_DEX_TO_STRING_STYLE)
@@ -115,9 +103,9 @@ class InputOutput(  var address: String,
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder(alphabetic = true)
-class TransferMessage : BinanceDexTransactionMessage {
-    var inputs: List<InputOutput>? = null
-    var outputs: List<InputOutput>? = null
+class TransferMessage(val inputs: List<InputOutput>,
+                      val outputs: List<InputOutput>)
+        :BinanceDexTransactionMessage {
 
     override fun toString(): String {
         return ToStringBuilder(this, BinanceDexConstants.BINANCE_DEX_TO_STRING_STYLE)
@@ -129,15 +117,17 @@ class TransferMessage : BinanceDexTransactionMessage {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder(alphabetic = true)
-class SignData {
+class SignData{
+
     @JsonProperty("chain_id")
-    var chainId: String? = null
+    var chainId: String = ""
+
     @JsonProperty("account_number")
-    var accountNumber: String? = null
-    var sequence: String? = null
-    var memo: String? = null
-    var msgs: Array<BinanceDexTransactionMessage>? = null
-    var source: String? = null
+    var accountNumber: String = ""
+    var sequence: String = ""
+    var memo: String = ""
+    lateinit var msgs: Array<BinanceDexTransactionMessage>
+    var source: String = ""
     var data: ByteArray? = null
 
     override fun toString(): String {

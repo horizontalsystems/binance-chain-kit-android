@@ -86,7 +86,7 @@ class BinanceChainKit(private val account: String,
 
     @Throws
     fun validateAddress(address: String) {
-        Crypto.decodeAddress( address )
+        Crypto.decodeAddress(address)
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String): Single<String> {
@@ -101,8 +101,7 @@ class BinanceChainKit(private val account: String,
 
     fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null)
 
-            : Single<List<TransactionInfo>>
-    {
+            : Single<List<TransactionInfo>> {
         return transactionManager
             .getTransactions(asset.symbol, fromTransactionHash, limit)
             .map { list -> list.map { TransactionInfo(it) } }
@@ -132,7 +131,8 @@ class BinanceChainKit(private val account: String,
     override fun onSyncTransactions(transactions: List<Transaction>) {
         transactions.groupBy { it.symbol }
             .forEach { (symbol, transactions) ->
-                assetBy(symbol)?.transactionsSubject?.onNext(transactions.map { TransactionInfo(it) })
+                assetBy(symbol)?.transactionsSubject?.onNext(
+                    transactions.map { TransactionInfo(it) })
             }
 
     }
@@ -149,40 +149,40 @@ class BinanceChainKit(private val account: String,
         Syncing
     }
 
-    enum class NetworkType{
+    enum class NetworkType {
         MainNet,
         TestNet;
 
         val addressPrefix: String
-            get() = when(this) {
+            get() = when (this) {
                 MainNet -> "bnb"
                 TestNet -> "tbnb"
             }
 
         val endpoint: String
-            get() = when(this){
+            get() = when (this) {
                 MainNet -> "https://dex.binance.org"
                 TestNet -> "https://testnet-dex.binance.org"
             }
 
     }
 
-    companion object{
+    companion object {
 
         fun instance(context: Context, words: List<String>, walletId: String,
-                     networkType: NetworkType = NetworkType.MainNet) : BinanceChainKit{
+                     networkType: NetworkType = NetworkType.MainNet): BinanceChainKit {
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
-            val hdWallet = HDWallet( Mnemonic().toSeed( words), coinType = 714  )
+            val hdWallet = HDWallet(Mnemonic().toSeed(words), coinType = 714)
 
-            val wallet = Wallet( hdWallet, networkType)
+            val wallet = Wallet(hdWallet, networkType)
 
             val binanceApi = BinanceChainApi(networkType)
             val balanceManager = BalanceManager(storage, binanceApi)
-            val actionManager = TransactionManager( wallet, storage, binanceApi )
+            val actionManager = TransactionManager(wallet, storage, binanceApi)
 
-            val kit = BinanceChainKit( wallet.address, balanceManager, actionManager )
+            val kit = BinanceChainKit(wallet.address, balanceManager, actionManager)
 
             balanceManager.listener = kit
             actionManager.listener = kit
@@ -193,13 +193,13 @@ class BinanceChainKit(private val account: String,
             return kit
         }
 
-        fun clear(context: Context, networkType: NetworkType, walletId: String)
-        {
-            SQLiteDatabase.deleteDatabase(context.getDatabasePath(getDatabaseName(networkType, walletId)))
+        fun clear(context: Context, networkType: NetworkType, walletId: String) {
+            SQLiteDatabase.deleteDatabase(
+                context.getDatabasePath(getDatabaseName(networkType, walletId))
+            )
         }
 
-        private fun getDatabaseName(networkType: NetworkType, walletId: String): String
-        {
+        private fun getDatabaseName(networkType: NetworkType, walletId: String): String {
             return "Binance-$networkType-$walletId"
         }
     }

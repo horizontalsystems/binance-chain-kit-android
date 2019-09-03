@@ -67,13 +67,13 @@ class Message {
 
     @Throws(IOException::class)
     fun encodeStdTx(msg: ByteArray, signature: ByteArray): ByteArray {
-        var stdtxBuilder = StdTx.newBuilder()
+        var stdTxBuilder = StdTx.newBuilder()
             .addMsgs(ByteString.copyFrom(msg))
             .addSignatures(ByteString.copyFrom(signature))
             .setMemo(this.memo)
             .setSource(Source.BROADCAST.value.toLong())
 
-        return EncodeUtils.aminoWrap(stdtxBuilder.build().toByteArray(), MessageType.StdTx.typePrefixBytes, true)
+        return EncodeUtils.aminoWrap(stdTxBuilder.build().toByteArray(), MessageType.StdTx.typePrefixBytes, true)
     }
 
 
@@ -106,19 +106,13 @@ class Message {
 
     fun createTransferMessage(): TransferMessage {
 
-        val token = Token()
-        token.denom = coin
-        token.amount = doubleToLong(amount.toPlainString())
+        val token = Token(coin,doubleToLong(amount.toPlainString()))
         val coins = singletonList(token)
 
         val input = InputOutput(this.wallet.address, coins)
         val output = InputOutput(this.toAddress, coins)
 
-        val msgBean = TransferMessage()
-        msgBean.inputs = singletonList(input)
-        msgBean.outputs = singletonList(output)
-
-        return msgBean
+        return TransferMessage(singletonList(input),singletonList(output))
     }
 
     private fun toProtoInput(input: InputOutput): Send.Input {

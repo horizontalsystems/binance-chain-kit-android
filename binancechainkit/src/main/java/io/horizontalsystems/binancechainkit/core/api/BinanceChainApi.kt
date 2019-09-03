@@ -15,14 +15,12 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
-import java.lang.Exception
 import java.math.BigDecimal
 import java.util.*
 import java.util.logging.Logger
 
 class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
-    //val address: String
 
     private val logger = Logger.getLogger("BinanceChainApi")
     private var binanceChainApiService: BinanceChainApiService
@@ -75,11 +73,10 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .flatMap { account ->
                 wallet.accountNumber = account.accountNumber
                 wallet.sequence = account.sequence
-                val sync = true
 
+                val sync = true
                 val message = Message.transfer(symbol, amount, to, memo, wallet)
 
-                logger.info(message.buildTransferPayload())
                 binanceChainApiService.broadcast(sync, message.buildTransfer())
 
             }.map {
