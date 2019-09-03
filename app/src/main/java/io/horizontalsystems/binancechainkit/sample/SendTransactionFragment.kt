@@ -50,9 +50,7 @@ class SendTransactionFragment : Fragment() {
                 else -> send()
             }
         }
-        sendAddress.setText("tbnb1whutmq6c6c8ky3hmw4pzpxwnf9z5plj7u7yeam")
-        sendAmount.setText("2")
-        sendMemo.setText("memo1")
+
     }
 
     private fun send() {
