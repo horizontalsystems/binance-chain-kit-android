@@ -111,12 +111,8 @@ class Message {
         token.amount = doubleToLong(amount.toPlainString())
         val coins = singletonList(token)
 
-        val input = InputOutput()
-        input.address = this.wallet.address
-        input.coins = coins
-        val output = InputOutput()
-        output.address = toAddress
-        output.coins = coins
+        val input = InputOutput(this.wallet.address, coins)
+        val output = InputOutput(this.toAddress, coins)
 
         val msgBean = TransferMessage()
         msgBean.inputs = singletonList(input)
@@ -129,7 +125,7 @@ class Message {
         val address = Crypto.decodeAddress(input.address)
         val builder = Send.Input.newBuilder().setAddress(ByteString.copyFrom(address))
 
-        for (coin in input.coins!!) {
+        for (coin in input.coins) {
             val protCoin = Send.Token.newBuilder().setAmount(coin.amount)
                 .setDenom(coin.denom).build()
             builder.addCoins(protCoin)
@@ -141,7 +137,7 @@ class Message {
         val address = Crypto.decodeAddress(output.address)
         val builder = Send.Output.newBuilder().setAddress(ByteString.copyFrom(address))
 
-        for (coin in output.coins!!) {
+        for (coin in output.coins) {
             val protCoin = Send.Token.newBuilder().setAmount(coin.amount)
                 .setDenom(coin.denom).build()
             builder.addCoins(protCoin)
@@ -181,13 +177,7 @@ class Message {
 
     }
 
-    fun longToDouble(l: Long): String {
-        return BigDecimal.valueOf(l).divide(MULTIPLY_FACTOR).toString()
-    }
-
     private fun createRequestBody(payload: String): RequestBody {
         return RequestBody.create(MEDIA_TYPE, payload)
     }
-
-
 }

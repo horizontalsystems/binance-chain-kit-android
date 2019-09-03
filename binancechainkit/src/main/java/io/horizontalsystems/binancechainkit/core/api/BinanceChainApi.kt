@@ -33,7 +33,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .create()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(networkType.endpoint())
+            .baseUrl(networkType.endpoint)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()

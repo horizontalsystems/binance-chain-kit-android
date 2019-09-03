@@ -77,27 +77,4 @@ enum class MessageType private constructor(typePrefix: String?) {
             this.typePrefixBytes = EncodeUtils.hexStringToByteArray(typePrefix)
     }
 
-//    companion object {
-//
-//        fun getMessageType(bytes: ByteArray?): MessageType? {
-//
-//            if (null == bytes || bytes.size < 4) {
-//                null
-//            }
-//            else MessageType.values().filter {
-//                 type ->
-//                    if ( type.typePrefixBytes.size < 4) {
-//                        return type
-//                    }
-//                    for (i in 0..3) {
-//                        if (type.typePrefixBytes[i] != bytes[i]) {
-//                            return type
-//                        }
-//                    }
-//                    true
-//                }.fil
-//                .findAny().orElse(null)
-//        }
-//    }
-
 }

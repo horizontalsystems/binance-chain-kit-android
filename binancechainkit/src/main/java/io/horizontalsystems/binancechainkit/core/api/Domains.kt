@@ -19,8 +19,6 @@ typealias ProtoToken = io.horizontalsystems.binancechainkit.proto.Token
 
 class Response {
 
-    class Error( val message: String )
-
     class Account(
         @SerializedName("account_number") var accountNumber: Int, var balances: List<Balance>,
         val sequence: Long
@@ -103,9 +101,8 @@ class Token {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder(alphabetic = true)
-class InputOutput {
-    var address: String? = null
-    var coins: List<Token>? = null
+class InputOutput(  var address: String,
+                    var coins: List<Token>){
 
     override fun toString(): String {
         return ToStringBuilder(this, BinanceDexConstants.BINANCE_DEX_TO_STRING_STYLE)
