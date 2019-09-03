@@ -153,27 +153,24 @@ class BinanceChainKit(private val account: String,
         MainNet,
         TestNet;
 
-        fun addressPrefix(): String {
-            return when(this){
+        val addressPrefix: String
+            get() = when(this) {
                 MainNet -> "bnb"
                 TestNet -> "tbnb"
             }
-        }
 
-        fun endpoint(): String{
-            return when(this){
+        val endpoint: String
+            get() = when(this){
                 MainNet -> "https://dex.binance.org"
                 TestNet -> "https://testnet-dex.binance.org"
             }
-        }
 
     }
 
     companion object{
 
         fun instance(context: Context, words: List<String>, walletId: String,
-                     networkType: NetworkType = NetworkType.MainNet) : BinanceChainKit
-        {
+                     networkType: NetworkType = NetworkType.MainNet) : BinanceChainKit{
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
