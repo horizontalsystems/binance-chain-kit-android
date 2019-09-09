@@ -144,11 +144,11 @@ class Message {
 
         val builder = Send.newBuilder()
 
-        for (input in msg.inputs!!) {
+        for (input in msg.inputs) {
             builder.addInputs(toProtoInput(input))
         }
 
-        for (output in msg.outputs!!) {
+        for (output in msg.outputs) {
             builder.addOutputs(toProtoOutput(output))
         }
         val proto = builder.build()
