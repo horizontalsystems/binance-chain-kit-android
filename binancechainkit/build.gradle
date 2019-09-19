@@ -61,7 +61,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.12.1'
     implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'org.apache.commons:commons-lang3:3.0'
+    implementation 'org.apache.commons:commons-lang3:3.9'
 
 
     // Room
@@ -91,12 +91,12 @@ dependencies {
 
     annotationProcessor 'org.projectlombok:lombok:1.18.4'
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.9'
 
     implementation 'com.google.protobuf:protobuf-lite:3.0.0'
-    implementation 'com.google.guava:guava:11.0.2'
+    implementation 'com.google.guava:guava:28.1-android'
 
 }
 
