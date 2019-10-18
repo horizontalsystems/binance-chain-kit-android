@@ -3,8 +3,8 @@ package io.horizontalsystems.binancechainkit
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import io.horizontalsystems.binancechainkit.core.Asset
-import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.Wallet
+import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.helpers.Crypto
 import io.horizontalsystems.binancechainkit.managers.BalanceManager
 import io.horizontalsystems.binancechainkit.managers.TransactionManager
@@ -22,13 +22,17 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.LinkedHashMap
 
-class BinanceChainKit(private val account: String,
-                      private val balanceManager: BalanceManager,
-                      private val transactionManager: TransactionManager)
-
-    : BalanceManager.Listener, TransactionManager.Listener {
+class BinanceChainKit(
+    private val account: String,
+    private val balanceManager: BalanceManager,
+    private val transactionManager: TransactionManager,
+    private val networkType: NetworkType
+) : BalanceManager.Listener, TransactionManager.Listener {
 
     val binanceBalance: BigDecimal
         get() = balanceManager.getBalance("BNB")?.amount ?: BigDecimal.ZERO
@@ -107,6 +111,28 @@ class BinanceChainKit(private val account: String,
             .map { list -> list.map { TransactionInfo(it) } }
     }
 
+    fun statusInfo(): Map<String, Any> {
+        val statusInfo = LinkedHashMap<String, Any>()
+
+        statusInfo["Synced Until"] = latestBlock?.time?.let { parseLastBlockDate(it) } ?: "N/A"
+        statusInfo["Last Block Height"] = latestBlock?.height ?: "N/A"
+        statusInfo["Sync State"] = syncState.name
+        statusInfo["RPC Host"] = networkType.endpoint
+
+        return statusInfo
+    }
+
+    private fun parseLastBlockDate(date: String): Date? {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+        sdf.timeZone = TimeZone.getTimeZone("GMT")
+
+        return try {
+            sdf.parse(date)
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
     // BalanceManager Listener
 
     override fun onSyncBalances(balances: List<Balance>, latestBlock: LatestBlock) {
@@ -182,7 +208,7 @@ class BinanceChainKit(private val account: String,
             val balanceManager = BalanceManager(storage, binanceApi)
             val actionManager = TransactionManager(wallet, storage, binanceApi)
 
-            val kit = BinanceChainKit(wallet.address, balanceManager, actionManager)
+            val kit = BinanceChainKit(wallet.address, balanceManager, actionManager, networkType)
 
             balanceManager.listener = kit
             actionManager.listener = kit
