@@ -9,7 +9,9 @@ import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
 import io.reactivex.Single
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -17,15 +19,19 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.math.BigDecimal
 import java.util.*
-import java.util.logging.Logger
 
 class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
 
-    private val logger = Logger.getLogger("BinanceChainApi")
+    private val logger = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
     private var binanceChainApiService: BinanceChainApiService
 
     init {
+        val httpClient = OkHttpClient.Builder()
+        httpClient.addInterceptor(logger)
+
         val gson = GsonBuilder()
             .registerTypeAdapter(Date::class.java, GsonUTCDateAdapter())
             .create()
@@ -34,6 +40,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .baseUrl(networkType.endpoint)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .client(httpClient.build())
             .build()
 
         binanceChainApiService = retrofit.create(BinanceChainApiService::class.java)
