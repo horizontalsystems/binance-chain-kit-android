@@ -76,13 +76,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .map { it.tx }
     }
 
-    fun send(
-        symbol: String,
-        to: String,
-        amount: BigDecimal,
-        memo: String,
-        wallet: Wallet
-    ): Single<String> {
+    fun send(symbol: String, to: String, amount: BigDecimal, memo: String, wallet: Wallet): Single<String> {
 
         return binanceChainApiService.nodeInfo()
             .flatMap {
