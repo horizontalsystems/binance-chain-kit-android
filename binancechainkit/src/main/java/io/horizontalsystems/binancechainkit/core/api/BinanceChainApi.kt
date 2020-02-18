@@ -92,20 +92,18 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
                 val message = Message.transfer(symbol, amount, to, memo, wallet)
 
                 binanceChainApiService.broadcast(sync, message.buildTransfer())
-                    .onErrorResumeNext {
-                        if (it is HttpException) {
-                            val body = it.response().errorBody()
-                            val adapter: TypeAdapter<BinanceError> =
-                                Gson().getAdapter(BinanceError::class.java)
-                            val binanceError: BinanceError = adapter.fromJson(body?.string())
-                            throw binanceError
-                        } else {
-                            Single.error(it.fillInStackTrace())
-                        }
-                    }
             }
             .map {
                 it.first().hash
+            }
+            .onErrorResumeNext {
+                if (it is HttpException) {
+                    val adapter: TypeAdapter<BinanceError> = Gson().getAdapter(BinanceError::class.java)
+                    val binanceError: BinanceError = adapter.fromJson(it.response().errorBody()?.string())
+                    Single.error(binanceError)
+                } else {
+                    Single.error(it.fillInStackTrace())
+                }
             }
     }
 
