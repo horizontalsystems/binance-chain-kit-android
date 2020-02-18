@@ -1,7 +1,9 @@
 package io.horizontalsystems.binancechainkit.core.api
 
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
 import io.horizontalsystems.binancechainkit.BinanceChainKit
 import io.horizontalsystems.binancechainkit.core.GsonUTCDateAdapter
 import io.horizontalsystems.binancechainkit.core.Wallet
@@ -52,8 +54,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .onErrorResumeNext {
                 if (it is HttpException && it.code() == 404) {
                     Single.just(listOf())
-                }
-                else {
+                } else {
                     Single.error(it.fillInStackTrace())
                 }
             }
@@ -61,7 +62,13 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
     fun getLatestBlock(): Single<LatestBlock> {
         return binanceChainApiService.nodeInfo()
-            .map { LatestBlock(it.sync_info.blockHeight, it.sync_info.blockHash, it.sync_info.blockTime) }
+            .map {
+                LatestBlock(
+                    it.sync_info.blockHeight,
+                    it.sync_info.blockHash,
+                    it.sync_info.blockTime
+                )
+            }
     }
 
     fun getTransactions(account: String, startTime: Long): Single<List<Transaction>> {
@@ -69,7 +76,13 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .map { it.tx }
     }
 
-    fun send(symbol: String, to: String, amount: BigDecimal, memo: String, wallet: Wallet): Single<String> {
+    fun send(
+        symbol: String,
+        to: String,
+        amount: BigDecimal,
+        memo: String,
+        wallet: Wallet
+    ): Single<String> {
 
         return binanceChainApiService.nodeInfo()
             .flatMap {
@@ -85,8 +98,19 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
                 val message = Message.transfer(symbol, amount, to, memo, wallet)
 
                 binanceChainApiService.broadcast(sync, message.buildTransfer())
-
-            }.map {
+                    .onErrorResumeNext {
+                        if (it is HttpException) {
+                            val body = it.response().errorBody()
+                            val adapter: TypeAdapter<BinanceError> =
+                                Gson().getAdapter(BinanceError::class.java)
+                            val binanceError: BinanceError = adapter.fromJson(body?.string())
+                            throw binanceError
+                        } else {
+                            Single.error(it.fillInStackTrace())
+                        }
+                    }
+            }
+            .map {
                 it.first().hash
             }
     }
