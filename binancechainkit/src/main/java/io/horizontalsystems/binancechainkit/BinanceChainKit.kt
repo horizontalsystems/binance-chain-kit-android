@@ -62,6 +62,7 @@ class BinanceChainKit(
         }
 
         assets.add(newToken)
+        balanceManager.sync(account)
 
         return newToken
     }
