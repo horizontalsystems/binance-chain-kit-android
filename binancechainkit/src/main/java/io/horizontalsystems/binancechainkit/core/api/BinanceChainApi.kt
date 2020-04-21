@@ -7,6 +7,7 @@ import com.google.gson.TypeAdapter
 import io.horizontalsystems.binancechainkit.BinanceChainKit
 import io.horizontalsystems.binancechainkit.core.GsonUTCDateAdapter
 import io.horizontalsystems.binancechainkit.core.Wallet
+import io.horizontalsystems.binancechainkit.core.retryWithDelay
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
@@ -50,6 +51,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
     fun getBalances(account: String): Single<List<Balance>> {
         return binanceChainApiService.account(account)
+            .retryWithDelay(1)
             .map { it.balances }
             .onErrorResumeNext {
                 if (it is HttpException && it.code() == 404) {
@@ -62,6 +64,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
     fun getLatestBlock(): Single<LatestBlock> {
         return binanceChainApiService.nodeInfo()
+            .retryWithDelay(1)
             .map {
                 LatestBlock(
                     it.sync_info.blockHeight,
@@ -73,6 +76,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
     fun getTransactions(account: String, startTime: Long): Single<List<Transaction>> {
         return binanceChainApiService.transactions(account, startTime)
+            .retryWithDelay(1)
             .map { it.tx }
     }
 
