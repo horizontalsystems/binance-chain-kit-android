@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import io.horizontalsystems.binancechainkit.core.Asset
 import io.horizontalsystems.binancechainkit.core.Wallet
 import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
+import io.horizontalsystems.binancechainkit.core.api.BinanceError
 import io.horizontalsystems.binancechainkit.helpers.Crypto
 import io.horizontalsystems.binancechainkit.managers.BalanceManager
 import io.horizontalsystems.binancechainkit.managers.TransactionManager
@@ -45,7 +46,7 @@ class BinanceChainKit(
     private val assets = mutableListOf<Asset>()
     private val latestBlockSubject = PublishSubject.create<LatestBlock>()
 
-    var syncState: SyncState = SyncState.NotSynced
+    var syncState: SyncState = SyncState.NotSynced(Throwable("Initial State"))
         set(value) {
             if (field != value) {
                 field = value
@@ -117,7 +118,7 @@ class BinanceChainKit(
 
         statusInfo["Synced Until"] = latestBlock?.time?.let { parseLastBlockDate(it) } ?: "N/A"
         statusInfo["Last Block Height"] = latestBlock?.height ?: "N/A"
-        statusInfo["Sync State"] = syncState.name
+        statusInfo["Sync State"] = syncState.getName()
         statusInfo["RPC Host"] = networkType.endpoint
 
         return statusInfo
@@ -149,8 +150,12 @@ class BinanceChainKit(
         syncState = SyncState.Synced
     }
 
-    override fun onSyncBalanceFail() {
-        syncState = SyncState.NotSynced
+    override fun onSyncBalanceFail(error: Throwable) {
+        var throwable = error
+        if (error is BinanceError) {
+            throwable = Throwable(error.description())
+        }
+        syncState = SyncState.NotSynced(throwable)
     }
 
     // TransactionManager Listener
@@ -170,10 +175,18 @@ class BinanceChainKit(
 
     // SyncState
 
-    enum class SyncState {
-        Synced,
-        NotSynced,
-        Syncing
+    sealed class SyncState {
+        object Synced: SyncState()
+        class NotSynced(val error: Throwable): SyncState()
+        object Syncing: SyncState()
+
+        fun getName(): String{
+            return when(this){
+                Synced -> "Synced"
+                Syncing -> "Syncing"
+                is NotSynced -> "Not Synced"
+            }
+        }
     }
 
     enum class NetworkType {

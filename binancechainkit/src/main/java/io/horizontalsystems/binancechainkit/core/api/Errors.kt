@@ -10,11 +10,17 @@ sealed class BinanceException(message: String) : IllegalArgumentException(messag
 }
 
 class BinanceError: Exception() {
-    var code: String = ""
-
-    @SerializedName("failed_tx_index")
-    val failedTxIndex: String = ""
+    var code: Int = 0
 
     @SerializedName("message")
     override var message: String = ""
+
+    fun description(): String{
+        var text = ""
+        if (code > 0){
+            text += "Code: $code,"
+        }
+        text += " $message"
+        return text
+    }
 }

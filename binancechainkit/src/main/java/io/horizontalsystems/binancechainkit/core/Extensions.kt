@@ -1,8 +1,8 @@
 package io.horizontalsystems.binancechainkit.core
 
+import io.horizontalsystems.binancechainkit.core.api.BinanceError
 import io.reactivex.Flowable
 import io.reactivex.Single
-import retrofit2.HttpException
 import java.util.concurrent.TimeUnit
 
 fun <T> Single<T>.retryWithDelay(delaySeconds: Int): Single<T> {
@@ -12,7 +12,7 @@ fun <T> Single<T>.retryWithDelay(delaySeconds: Int): Single<T> {
     return retryWhen { single ->
         single.flatMap { throwable ->
             // Error code 429 (API Rates limit exceeded) HTTP Code: Too Many Request
-            if ((throwable as? HttpException)?.code() == 429 && ++retryCount <= maxRetries) {
+            if ((throwable as? BinanceError)?.code == 429 && ++retryCount <= maxRetries) {
                 Flowable.timer(delaySeconds.toLong(), TimeUnit.SECONDS)
             } else {
                 Flowable.error(throwable)

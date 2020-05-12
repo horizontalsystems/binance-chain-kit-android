@@ -51,20 +51,15 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
 
     fun getBalances(account: String): Single<List<Balance>> {
         return binanceChainApiService.account(account)
-            .retryWithDelay(1)
             .map { it.balances }
             .onErrorResumeNext {
-                if (it is HttpException && it.code() == 404) {
-                    Single.just(listOf())
-                } else {
-                    Single.error(it.fillInStackTrace())
-                }
+                Single.error(parseError(it))
             }
+            .retryWithDelay(1)
     }
 
     fun getLatestBlock(): Single<LatestBlock> {
         return binanceChainApiService.nodeInfo()
-            .retryWithDelay(1)
             .map {
                 LatestBlock(
                     it.sync_info.blockHeight,
@@ -72,12 +67,19 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
                     it.sync_info.blockTime
                 )
             }
+            .onErrorResumeNext {
+                Single.error(parseError(it))
+            }
+            .retryWithDelay(1)
     }
 
     fun getTransactions(account: String, startTime: Long): Single<List<Transaction>> {
         return binanceChainApiService.transactions(account, startTime)
-            .retryWithDelay(1)
             .map { it.tx }
+            .onErrorResumeNext {
+                Single.error(parseError(it))
+            }
+            .retryWithDelay(1)
     }
 
     fun send(symbol: String, to: String, amount: BigDecimal, memo: String, wallet: Wallet): Single<String> {
@@ -101,14 +103,19 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
                 it.first().hash
             }
             .onErrorResumeNext {
-                if (it is HttpException) {
-                    val adapter: TypeAdapter<BinanceError> = Gson().getAdapter(BinanceError::class.java)
-                    val binanceError: BinanceError = adapter.fromJson(it.response().errorBody()?.string())
-                    Single.error(binanceError)
-                } else {
-                    Single.error(it.fillInStackTrace())
-                }
+                Single.error(parseError(it))
             }
+    }
+
+    private fun parseError(it: Throwable): Throwable {
+        return if (it is HttpException) {
+            val adapter: TypeAdapter<BinanceError> = Gson().getAdapter(BinanceError::class.java)
+            val binanceError: BinanceError = adapter.fromJson(it.response().errorBody()?.string())
+            binanceError.code = it.code()
+            binanceError
+        } else {
+            it.fillInStackTrace()
+        }
     }
 
 }
