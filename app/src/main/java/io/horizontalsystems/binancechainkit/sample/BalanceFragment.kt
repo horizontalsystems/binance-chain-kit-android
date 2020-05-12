@@ -85,7 +85,7 @@ class ViewHolderToken(containerView: View) : RecyclerView.ViewHolder(containerVi
         val syncState = when (adapter.syncState) {
             BinanceChainKit.SyncState.Synced -> "Synced"
             BinanceChainKit.SyncState.Syncing -> "Syncing"
-            BinanceChainKit.SyncState.NotSynced -> "NotSynced"
+            is BinanceChainKit.SyncState.NotSynced -> "NotSynced"
             else -> "null"
         }
 
