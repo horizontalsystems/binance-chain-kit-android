@@ -16,8 +16,8 @@ interface TransactionDao {
     @Query("DELETE FROM `Transaction`")
     fun deleteAll()
 
-    @Query("SELECT * FROM `Transaction` WHERE transactionId = :id LIMIT 1")
-    fun getById(id: String) : Transaction?
+    @Query("SELECT * FROM `Transaction` WHERE transactionId = :hash LIMIT 1")
+    fun getByHash(hash: String) : Transaction?
 
     @RawQuery
     fun getSql(query: SupportSQLiteQuery): List<Transaction>

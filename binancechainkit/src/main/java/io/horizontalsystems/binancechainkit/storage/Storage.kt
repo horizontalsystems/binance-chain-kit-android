@@ -55,11 +55,15 @@ class Storage(private val database: KitDatabase) : IStorage {
         database.transactions.insertAll(transactions)
     }
 
+    override fun getTransaction(hash: String): Transaction? {
+        return database.transactions.getByHash(hash)
+    }
+
     override fun getTransactions(symbol: String, fromTransactionHash: String?, limit: Int?): List<Transaction> {
         var sql = "SELECT * FROM `Transaction` WHERE symbol = '$symbol'"
 
         fromTransactionHash?.let {
-            database.transactions.getById(it)?.let { transaction ->
+            database.transactions.getByHash(it)?.let { transaction ->
                 sql += " AND blockTime <= ${transaction.blockTime.time}"
                 sql += " AND transactionId <> '${transaction.transactionId}'"
             }

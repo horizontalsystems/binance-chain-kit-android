@@ -37,6 +37,10 @@ class TransactionManager( private val wallet: Wallet,
         return Single.just(storage.getTransactions(symbol, fromTransactionHash, limit))
     }
 
+    fun getTransaction(transactionHash: String): Transaction? {
+        return storage.getTransaction(transactionHash)
+    }
+
     fun sync(account: String) {
         val syncedUntilTime = storage.syncState?.transactionSyncedUntilTime ?: binanceLaunchTime
 

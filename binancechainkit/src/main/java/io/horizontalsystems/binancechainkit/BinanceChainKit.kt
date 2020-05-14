@@ -105,8 +105,13 @@ class BinanceChainKit(
             }
     }
 
-    fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null)
+    fun getTransaction(hash: String): TransactionInfo? {
+        return transactionManager.getTransaction(hash)?.let {
+            TransactionInfo(it)
+        }
+    }
 
+    fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null)
             : Single<List<TransactionInfo>> {
         return transactionManager
             .getTransactions(asset.symbol, fromTransactionHash, limit)
