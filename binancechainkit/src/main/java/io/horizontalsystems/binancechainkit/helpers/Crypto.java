@@ -17,19 +17,19 @@
 package io.horizontalsystems.binancechainkit.helpers;
 
 
-
-import io.horizontalsystems.hdwalletkit.ECDSASignature;
-import io.horizontalsystems.hdwalletkit.ECException;
-import io.horizontalsystems.hdwalletkit.ECKey;
-import org.spongycastle.crypto.digests.SHA256Digest;
-import org.spongycastle.crypto.params.ECPrivateKeyParameters;
-import org.spongycastle.crypto.signers.ECDSASigner;
-import org.spongycastle.crypto.signers.HMacDSAKCalculator;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import io.horizontalsystems.hdwalletkit.ECDSASignature;
+import io.horizontalsystems.hdwalletkit.ECException;
+import io.horizontalsystems.hdwalletkit.ECKey;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static io.horizontalsystems.hdwalletkit.ECKey.HALF_CURVE_ORDER;
@@ -37,12 +37,12 @@ import static io.horizontalsystems.hdwalletkit.ECKey.HALF_CURVE_ORDER;
 
 public class Crypto {
 
-    public static byte[] sign(byte[] msg, BigInteger privKey ) throws NoSuchAlgorithmException, ECException {
+    public static byte[] sign(byte[] msg, BigInteger privKey) throws NoSuchAlgorithmException, ECException {
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] msgHash = digest.digest(msg);
 
-        ECDSASignature signature = doSign(msgHash,privKey);
+        ECDSASignature signature = doSign(msgHash, privKey);
 
         byte[] result = new byte[64];
         System.arraycopy(bigIntegerToBytes(signature.getR(), 32), 0, result, 0, 32);
@@ -130,8 +130,7 @@ public class Crypto {
             //    s = 8, so (-8 % 10 == 2) thus both (r, 8) and (r, 2) are valid solutions.
             //    10 - 8 == 2, giving us always the latter solution, which is canonical.
             return new ECDSASignature(ecSig.getR(), ECKey.ecParams.getN().subtract(ecSig.getS()));
-        }
-        else {
+        } else {
             return ecSig;
         }
     }
@@ -147,8 +146,7 @@ public class Crypto {
             BigInteger[] components = signer.generateSignature(input);
 
             return toCanonicalised(new ECDSASignature(components[0], components[1]));
-        }
-        catch (RuntimeException exc) {
+        } catch (RuntimeException exc) {
 
             throw new ECException("Exception while creating signature", exc);
         }

@@ -110,7 +110,7 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
     private fun parseError(it: Throwable): Throwable {
         return if (it is HttpException) {
             val adapter: TypeAdapter<BinanceError> = Gson().getAdapter(BinanceError::class.java)
-            val binanceError: BinanceError = adapter.fromJson(it.response().errorBody()?.string())
+            val binanceError: BinanceError = adapter.fromJson(it.response()?.errorBody()?.string())
             binanceError.code = it.code()
             binanceError
         } else {

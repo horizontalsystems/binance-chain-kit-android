@@ -11,12 +11,14 @@ import java.io.IOException
 import java.security.NoSuchAlgorithmException
 import io.horizontalsystems.binancechainkit.proto.StdSignature
 import io.horizontalsystems.binancechainkit.proto.StdTx
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.Collections.singletonList
 
 
 class Message {
 
-    private val MEDIA_TYPE = okhttp3.MediaType.parse("text/plain; charset=utf-8")
+    private val MEDIA_TYPE = "text/plain; charset=utf-8".toMediaTypeOrNull()
     private val MULTIPLY_FACTOR = BigDecimal.valueOf(1e8)
     private val MAX_NUMBER = BigDecimal(java.lang.Long.MAX_VALUE)
 
@@ -172,6 +174,6 @@ class Message {
     }
 
     private fun createRequestBody(payload: String): RequestBody {
-        return RequestBody.create(MEDIA_TYPE, payload)
+        return payload.toRequestBody(MEDIA_TYPE)
     }
 }
