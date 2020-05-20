@@ -1,10 +1,10 @@
 package io.horizontalsystems.binancechainkit.helpers
 
 import com.google.protobuf.CodedOutputStream
-import org.spongycastle.util.encoders.Hex
 import java.io.IOException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.bouncycastle.util.encoders.Hex
 import java.nio.charset.Charset
 
 

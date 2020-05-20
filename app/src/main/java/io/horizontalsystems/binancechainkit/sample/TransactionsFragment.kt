@@ -10,7 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.horizontalsystems.binancechainkit.models.TransactionInfo
@@ -27,28 +27,26 @@ class TransactionsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activity?.let {
-            viewModel = ViewModelProviders.of(it).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-            viewModel.transactions.observe(this, Observer { mapped ->
-                mapped?.let {
-                    val list = mapped[selectedCoin]
-                    if (list != null) {
-                        transactionsAdapter.items = list
-                        transactionsAdapter.notifyDataSetChanged()
-                    }
+        viewModel.transactions.observe(this, Observer { mapped ->
+            mapped?.let {
+                val list = mapped[selectedCoin]
+                if (list != null) {
+                    transactionsAdapter.items = list
+                    transactionsAdapter.notifyDataSetChanged()
                 }
-            })
+            }
+        })
 
-            viewModel.latestBlock.observe(this, Observer { block ->
-                transactionsAdapter.lib = block.height
-            })
+        viewModel.latestBlock.observe(this, Observer { block ->
+            transactionsAdapter.lib = block.height
+        })
 
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_transactions, null)
+        return inflater.inflate(R.layout.fragment_transactions, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

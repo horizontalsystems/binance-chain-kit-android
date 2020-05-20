@@ -8,7 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
@@ -26,14 +26,12 @@ class SendTransactionFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activity?.let {
-            viewModel = ViewModelProviders.of(it).get(MainViewModel::class.java)
-            adapter = viewModel.adapters.first()
-        }
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        adapter = viewModel.adapters.first()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_send_receive, null)
+        return inflater.inflate(R.layout.fragment_send_receive, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
