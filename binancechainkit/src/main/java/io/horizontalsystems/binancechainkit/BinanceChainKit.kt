@@ -181,12 +181,12 @@ class BinanceChainKit(
     // SyncState
 
     sealed class SyncState {
-        object Synced: SyncState()
-        class NotSynced(val error: Throwable): SyncState()
-        object Syncing: SyncState()
+        object Synced : SyncState()
+        class NotSynced(val error: Throwable) : SyncState()
+        object Syncing : SyncState()
 
-        fun getName(): String{
-            return when(this){
+        fun getName(): String {
+            return when (this) {
                 Synced -> "Synced"
                 Syncing -> "Syncing"
                 is NotSynced -> "Not Synced"
@@ -214,12 +214,23 @@ class BinanceChainKit(
 
     companion object {
 
-        fun instance(context: Context, words: List<String>, walletId: String,
-                     networkType: NetworkType = NetworkType.MainNet): BinanceChainKit {
+        fun instance(
+            context: Context,
+            words: List<String>,
+            walletId: String,
+            networkType: NetworkType = NetworkType.MainNet
+        ) = instance(context, Mnemonic().toSeed(words), walletId, networkType)
+
+        fun instance(
+            context: Context,
+            seed: ByteArray,
+            walletId: String,
+            networkType: NetworkType = NetworkType.MainNet
+        ): BinanceChainKit {
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
-            val hdWallet = HDWallet(Mnemonic().toSeed(words), coinType = 714)
+            val hdWallet = HDWallet(seed, coinType = 714)
 
             val wallet = Wallet(hdWallet, networkType)
 
