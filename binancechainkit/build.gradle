@@ -94,7 +94,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.9'
 
-    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
+    implementation 'com.google.protobuf:protobuf-lite:3.0.1'
     implementation 'com.google.guava:guava:28.1-android'
 
 }
