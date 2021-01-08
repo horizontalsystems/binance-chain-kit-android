@@ -94,31 +94,19 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.9'
 
-    implementation 'com.google.protobuf:protobuf-lite:3.0.1'
+    implementation 'com.google.protobuf:protobuf-javalite:3.14.0'
     implementation 'com.google.guava:guava:28.1-android'
 
 }
 
 protobuf {
     protoc {
-        // You still need protoc like in the non-Android case
-        artifact = 'com.google.protobuf:protoc:3.6.1'
-    }
-    plugins {
-        javalite {
-            // The codegen for lite comes as a separate artifact
-            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
-        }
+        artifact = 'com.google.protobuf:protoc:3.14.0'
     }
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                // In most cases you don't need the full Java output
-                // if you use the lite output.
-                remove java
-            }
-            task.plugins {
-                javalite { }
+                java { option 'lite' }
             }
         }
     }
