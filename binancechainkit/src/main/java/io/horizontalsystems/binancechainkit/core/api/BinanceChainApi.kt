@@ -58,6 +58,10 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
             .retryWithDelay(1)
     }
 
+    fun getAccountAsync(account: String): Single<Response.Account> {
+        return binanceChainApiService.account(account)
+    }
+
     fun getLatestBlock(): Single<LatestBlock> {
         return binanceChainApiService.nodeInfo()
             .map {
