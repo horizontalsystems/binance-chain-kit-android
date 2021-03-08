@@ -9,6 +9,7 @@ import io.horizontalsystems.binancechainkit.core.GsonUTCDateAdapter
 import io.horizontalsystems.binancechainkit.core.Wallet
 import io.horizontalsystems.binancechainkit.core.retryWithDelay
 import io.horizontalsystems.binancechainkit.models.Balance
+import io.horizontalsystems.binancechainkit.models.Bep2Token
 import io.horizontalsystems.binancechainkit.models.LatestBlock
 import io.horizontalsystems.binancechainkit.models.Transaction
 import io.reactivex.Single
@@ -52,6 +53,14 @@ class BinanceChainApi(networkType: BinanceChainKit.NetworkType) {
     fun getBalances(account: String): Single<List<Balance>> {
         return binanceChainApiService.account(account)
             .map { it.balances }
+            .onErrorResumeNext {
+                Single.error(parseError(it))
+            }
+            .retryWithDelay(1)
+    }
+
+    fun getTokens(): Single<List<Bep2Token>> {
+        return binanceChainApiService.getTokens()
             .onErrorResumeNext {
                 Single.error(parseError(it))
             }
@@ -124,6 +133,9 @@ interface BinanceChainApiService {
 
     @GET("/api/v1/account/{address}")
     fun account(@Path("address") address: String): Single<Response.Account>
+
+    @GET("/api/v1/tokens?limit=1000")
+    fun getTokens(): Single<List<Bep2Token>>
 
     @GET("/api/v1/node-info")
     fun nodeInfo(): Single<Response.NodeInfoWrapper>
