@@ -213,8 +213,8 @@ class BinanceChainKit(
     }
 
     companion object {
-        fun wallet(words: List<String>, networkType: NetworkType): Wallet {
-            val seed = Mnemonic().toSeed(words)
+        fun wallet(words: List<String>, passphrase: String, networkType: NetworkType): Wallet {
+            val seed = Mnemonic().toSeed(words, passphrase)
             val hdWallet = HDWallet(seed, coinType = 714)
 
             return Wallet(hdWallet, networkType)
@@ -223,9 +223,10 @@ class BinanceChainKit(
         fun instance(
             context: Context,
             words: List<String>,
+            passphrase: String,
             walletId: String,
             networkType: NetworkType = NetworkType.MainNet
-        ) = instance(context, Mnemonic().toSeed(words), walletId, networkType)
+        ) = instance(context, Mnemonic().toSeed(words, passphrase), walletId, networkType)
 
         fun instance(
             context: Context,
