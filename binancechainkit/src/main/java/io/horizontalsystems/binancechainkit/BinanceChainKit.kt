@@ -59,7 +59,7 @@ class BinanceChainKit(
     private val syncStateSubject = PublishSubject.create<SyncState>()
 
     fun register(symbol: String): Asset {
-        val newToken = Asset(symbol).apply {
+        val newToken = Asset(symbol, account).apply {
             this.balance = balanceManager.getBalance(symbol)?.amount ?: BigDecimal(0)
         }
 
