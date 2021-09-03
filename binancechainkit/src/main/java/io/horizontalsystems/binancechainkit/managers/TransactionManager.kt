@@ -1,10 +1,11 @@
 package io.horizontalsystems.binancechainkit.managers
 
-import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.IStorage
 import io.horizontalsystems.binancechainkit.core.Wallet
+import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.models.SyncState
 import io.horizontalsystems.binancechainkit.models.Transaction
+import io.horizontalsystems.binancechainkit.models.TransactionFilterType
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -31,10 +32,29 @@ class TransactionManager( private val wallet: Wallet,
 
     fun getTransactions(
         symbol: String,
+        filterType: TransactionFilterType? = null,
         fromTransactionHash: String? = null,
         limit: Int? = null
     ): Single<List<Transaction>> {
-        return Single.just(storage.getTransactions(symbol, fromTransactionHash, limit))
+        var fromAddress: String? = null
+        var toAddress: String? = null
+
+        when (filterType) {
+            TransactionFilterType.Incoming -> {
+                toAddress = wallet.address
+            }
+            TransactionFilterType.Outgoing -> {
+                fromAddress = wallet.address
+            }
+        }
+
+        return Single.just(storage.getTransactions(
+            symbol,
+            fromAddress,
+            toAddress,
+            fromTransactionHash,
+            limit
+        ))
     }
 
     fun getTransaction(transactionHash: String): Transaction? {
