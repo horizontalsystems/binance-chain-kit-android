@@ -8,6 +8,7 @@ import io.horizontalsystems.binancechainkit.core.api.BinanceChainApi
 import io.horizontalsystems.binancechainkit.core.api.BinanceError
 import io.horizontalsystems.binancechainkit.helpers.Crypto
 import io.horizontalsystems.binancechainkit.managers.BalanceManager
+import io.horizontalsystems.binancechainkit.models.TransactionFilterType
 import io.horizontalsystems.binancechainkit.managers.TransactionManager
 import io.horizontalsystems.binancechainkit.models.Balance
 import io.horizontalsystems.binancechainkit.models.LatestBlock
@@ -111,10 +112,14 @@ class BinanceChainKit(
         }
     }
 
-    fun transactions(asset: Asset, fromTransactionHash: String? = null, limit: Int? = null)
-            : Single<List<TransactionInfo>> {
+    fun transactions(
+        asset: Asset,
+        filterType: TransactionFilterType? = null,
+        fromTransactionHash: String? = null,
+        limit: Int? = null
+    ): Single<List<TransactionInfo>> {
         return transactionManager
-            .getTransactions(asset.symbol, fromTransactionHash, limit)
+            .getTransactions(asset.symbol, filterType, fromTransactionHash, limit)
             .map { list -> list.map { TransactionInfo(it) } }
     }
 
