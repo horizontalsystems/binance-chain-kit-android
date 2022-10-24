@@ -220,7 +220,7 @@ class BinanceChainKit(
     companion object {
         fun wallet(words: List<String>, passphrase: String, networkType: NetworkType): Wallet {
             val seed = Mnemonic().toSeed(words, passphrase)
-            val hdWallet = HDWallet(seed, coinType = 714)
+            val hdWallet = HDWallet(seed, coinType = 714, purpose = HDWallet.Purpose.BIP44)
 
             return Wallet(hdWallet, networkType)
         }
@@ -242,7 +242,7 @@ class BinanceChainKit(
             val database = KitDatabase.create(context, getDatabaseName(networkType, walletId))
             val storage = Storage(database)
 
-            val hdWallet = HDWallet(seed, coinType = 714)
+            val hdWallet = HDWallet(seed, coinType = 714, purpose = HDWallet.Purpose.BIP44)
 
             val wallet = Wallet(hdWallet, networkType)
 
