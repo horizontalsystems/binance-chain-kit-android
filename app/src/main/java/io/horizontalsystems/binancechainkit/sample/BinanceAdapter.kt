@@ -36,6 +36,6 @@ class BinanceAdapter(private val binanceChainKit: BinanceChainKit, tokenSymbol: 
     }
 
     fun transactions(fromTransactionHash: String? = null, limit: Int? = null): Single<List<TransactionInfo>> {
-        return binanceChainKit.transactions(asset, fromTransactionHash, limit)
+        return binanceChainKit.transactions(asset, fromTransactionHash = fromTransactionHash, limit = limit)
     }
 }
