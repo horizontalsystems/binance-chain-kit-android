@@ -46,6 +46,9 @@ class TransactionManager( private val wallet: Wallet,
             TransactionFilterType.Outgoing -> {
                 fromAddress = wallet.address
             }
+
+            else -> {
+            }
         }
 
         return Single.just(storage.getTransactions(

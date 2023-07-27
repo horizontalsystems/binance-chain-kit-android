@@ -2,16 +2,15 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'maven-publish'
 
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 29
-        versionCode 1
-        versionName "0.3.0"
+        targetSdkVersion 33
 
         kapt {
             arguments {
@@ -29,15 +28,14 @@ android {
         }
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
-    buildToolsVersion '28.0.3'
-
+    namespace 'io.horizontalsystems.binancechainkit'
 }
 
 sourceSets {
@@ -48,29 +46,29 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation 'org.bouncycastle:bcpkix-jdk15on:1.65'
+    implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
 
     implementation 'com.github.horizontalsystems:hd-wallet-kit-android:66c2544'
 
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.8.1'
-    implementation 'com.squareup.retrofit2:converter-gson:2.8.1'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.5.0'
-    implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'org.apache.commons:commons-lang3:3.9'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.10'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 
 
     // Room
     def room_version = "1.1.1"
-    implementation 'androidx.room:room-runtime:2.2.5'
-    implementation 'androidx.room:room-rxjava2:2.2.5'
-    kapt 'androidx.room:room-compiler:2.2.5'
+    implementation 'androidx.room:room-runtime:2.5.2'
+    implementation 'androidx.room:room-rxjava2:2.5.2'
+    kapt 'androidx.room:room-compiler:2.5.2'
 
     // Test helpers
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:3.3.3'
     testImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
     testImplementation 'org.powermock:powermock-api-mockito2:2.0.7'
@@ -83,18 +81,18 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
     // Android Instrumentation Test
-    implementation 'androidx.annotation:annotation:1.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    implementation 'androidx.annotation:annotation:1.6.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito-inline:2.19.1'
     androidTestImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.4'
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.9'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
 
-    implementation 'com.google.protobuf:protobuf-javalite:3.14.0'
+    implementation 'com.google.protobuf:protobuf-javalite:3.23.1'
     implementation 'com.google.guava:guava:28.1-android'
 
 }
@@ -107,6 +105,16 @@ protobuf {
         all().each { task ->
             task.builtins {
                 java { option 'lite' }
+            }
+        }
+    }
+}
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
             }
         }
     }
